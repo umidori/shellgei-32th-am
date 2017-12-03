@@ -43,7 +43,268 @@
 					* 第3回：Perl正規表現入門 その２
 				</section>
 				<section data-markdown>
-					### 続きは勉強会終了後に
+					### 第1回：Perlワンライナー入門
+					#### ワンライナーを支援するPerlの機能
+					* 未定義の変数が使用可能
+					* ダイヤモンド演算子
+					* 豊富な特殊変数
+					* 豊富な起動オプション
+				</section>
+				<section data-markdown>
+					### 第2回：Perl正規表現入門 その１
+					#### ワンライナーを支援するPerlの機能
+					* 強力な正規表現
+						* 変数展開、変換エスケープ
+						* 置換演算子
+						* パターン修飾子
+						* プログレッシブマッチ
+						* 文字エイリアス、文字クラス
+						* アンカー
+						* 量指定子（最短マッチ）
+						* キャプチャとクラスタ化
+						* ルックアラウンドアサーション
+						* qr//クォート正規表現演算子
+				</section>
+				<section data-markdown>
+					### 第3回：Perl正規表現入門 その２
+					* 強力な正規表現
+						* 非バックトラックサブパターン
+						* プログラムパターン
+							* マッチ時コード評価
+							* マッチ時パターン展開
+						* 集大成
+				</section>
+				<section>
+					<h4>講師： 鳥海秀一</h4>
+					<ul>
+						<li>Perlプログラマ歴：6ヶ月</li>
+						<li class="fragment">変態Perlプログラマ歴：3ヶ月</li>
+					</ul>
+						<p class="fragment">こんな講師でごめんなさい</p>
+				</section>
+				<section data-markdown>
+					### 講義の前提
+					* Perlのワンライナーを記述する基本的な知識がある
+					* Perlの正規表現の基本的な知識がある
+				</section>
+				<section data-markdown>
+					### 参考書
+					* プログラミングPerl（オライリー・ジャパン）
+					* 詳説　正規表現（オライリー・ジャパン）
+				</section>
+				<section data-markdown>
+					### まずはPerlの正規表現を使った変態ワンランナーを見ていただきます
+				</section>
+				<section data-markdown>
+					### 問題１
+					* 標準入力から与えられた文字列の中の２文字の部分文字列を全て出力するプログラムを書きなさい
+				</section>
+				<section data-markdown>
+					### まともなPerlプログラマの解答例
+					* echo abcdef | perl -lne 'while(/../g){print $&;--pos}'
+				</section>
+				<section data-markdown>
+					### 変態Perlプログラマの解答例
+					* echo abcdef | perl -lne '/..(?{print$&})(?!)/'
+				</section>
+				<section data-markdown>
+					### 問題２
+					* 響け！ユーフォニアム問題を解きなさい
+				</section>
+				<section data-markdown>
+					### まともなPerlプログラマの解答例
+					* echo 響け！ユーフォニアム | perl -C -lne '$_ x=11;print for /(.{10})./g'
+				</section>
+				<section data-markdown>
+					### 変態Perlプログラマの解答例
+					* echo 響け！ユーフォニアム | perl -C -lne '$_ x=2;/.{10}(?{print$&})(?=.$)/'
+				</section>
+				<section>
+					<h3>Perlの正規表現の特徴</h3>
+					<ul class="fragment"><li>多機能であること</li></ul>
+					<p class="fragment">では、その代償は？</p>
+				</section>
+				<section data-markdown>
+					### Perlの正規表現の特徴
+					* 速度が遅くなりやすい
+				</section>
+				<section data-markdown>
+					### すぐ終わるPerlの正規表現
+					* echo aaaaaaaaaaaaaaaaaaaab | perl -lne 'print if /a\*a\*a\*a\*a\*a\*a\*a\*[bc]/' 
+				</section>
+				<section data-markdown>
+					### すぐには終わらないPerlの正規表現
+					* echo aaaaaaaaaaaaaaaaaaaa | perl -lne 'print if /a\*a\*a\*a\*a\*a\*a\*a\*[bc]/' 
+				</section>
+				<section data-markdown>
+					### Awkだとすぐに終わる
+					* echo aaaaaaaaaaaaaaaaaaaa | awk '/a\*a\*a\*a\*a\*a\*a\*a\*[bc]/' 
+				</section>
+				<section data-markdown>
+					### 問題
+					* Awk と Perl では何が異なるのか？
+					* Perlの正規表現が遅いのはなぜか？
+					* Perlはその対策を持っていないのか？
+				</section>
+				<section data-markdown>
+					### 問１
+					* Awk と Perl では何が異なるのか？
+				</section>
+				<section data-markdown>
+					### 答え
+					* 正規表現エンジンが異なる
+				</section>
+				<section data-markdown>
+					### 正規表現エンジンとは
+					* 正規表現を解釈し、パターンマッチを行うプログラムの部品のこと
+					* 根本的に異なる２つの方式がある
+						* DFA型エンジン
+						* NFA型エンジン
+				</section>
+				<section data-markdown>
+					### DFA型正規表現エンジン
+					* 決定性有限オートマトンを元に正規表現の解釈とパターンマッチを行う
+					* 処理が早い
+					* メモリをたくさん消費する
+					* 拡張性に乏しい（例：後方参照の実装が困難）
+					* 昔のegrep、ほとんどのAwkが採用している
+				</section>
+				<section data-markdown>
+					### NFA型正規表現エンジン
+					* 非決定性有限オートマトンを元に正規表現の解釈とパターンマッチを行う
+					* 処理が遅い
+					* メモリはあまり消費しない
+					* 拡張性に富んでいる
+					* grep、sed、Perl等ほとんどの処理系が採用している
+				</section>
+				<section data-markdown>
+					### ちなみに
+					* GNU awkとGNU grepはハイブリッド型
+					* NFA型エンジンには以下の２つのタイプがある
+						* 従来型NFA - 最左最長・早い者勝ち
+						* POSIX NFA - 最左最長
+				</section>
+				<section data-markdown>
+					### 問２
+					* Perlの正規表現が遅いのはなぜか？
+				</section>
+				<section data-markdown>
+					### 答え
+					* NFA型エンジンはバックトラック法を用いてパターンマッチを行なうから
+				</section>
+				<section data-markdown>
+					### バックトラック法とは
+					* すべての場合を調べないと正解が得られないような複雑な問題について、ある分岐点に来たときに一方を選択し進んでいき、それが間違いだと判断した場合に、最後に分岐した地点まで戻り、もう一方の方向へ進むということを何度も繰り返し、正解を導き出す方法（ASCII.jpデジタル用語辞典より）
+				</section>
+				<section data-markdown>
+					### バックトラックを行う正規表現例
+					* echo abcdef | perl -lne 'print $1 if /(.*)./'
+				</section>
+				<section data-markdown>
+					### バックトラックを可視化する
+					* echo abc | perl -Mre=debug -lne 'print $1 if /.*./'
+					* echo abc | perl -Mre=debug -lne 'print $1 if /.*../'
+				</section>
+				<section data-markdown>
+					### マッチ時コード評価
+					* (?{CODE})という形をした正規表現
+					* マッチは行わない
+					* 常に成功する幅ゼロのアサーション
+					* 副作用によりCODEの評価を行う
+				</section>
+				<section data-markdown>
+					### マッチ時コード評価の例
+					* echo abcdef | perl -lne '/.*(?{print "hi")}/'
+					* echo abcdef | perl -lne '/.*(?{print "hi")}./'
+				</section>
+				<section data-markdown>
+					### 遅い正規表現の評価回数を確認
+					* echo aaaaaaaaaaaaaaaaaaaa | perl -lne '$i=0;print if /a\*a\*a\*a\*a\*a\*a\*a\*(?{$i++})[bc]/;print $i' 
+				</section>
+				<section data-markdown>
+					### 正規表現(?!)
+					* 常に失敗する先読みアサーション
+					* 最適化の対象外となっているもよう
+				</section>
+				<section data-markdown>
+					### 変態正規表現プログラム
+					* echo abcdef | perl -lne '/..(?{print$&})(?!)/'
+					* echo 響け！ユーフォニアム | perl -C -lne '$_ x=2;/.{10}(?{print$&})(?=.$)/'
+				</section>
+				<section data-markdown>
+					### 問３
+					* Perlは正規表現が遅くならないような対策を持っていないのか？
+				</section>
+				<section data-markdown>
+					### 答え
+					* 非バックトラックサブパターン
+				</section>
+				<section data-markdown>
+					### 非バックトラックサブパターン
+					* (?>PATTERN)という形をした正規表現
+					* 別名はアトミックグループ
+					* PATTERNがマッチを見つけると決してバックトラックしない
+					* バックトラックしない点以外は(?:PATTERN)と同じ動作をする
+					* PATTERNに量指定子や選択肢が含まれていないと(?:PATTERN)と同じ
+				</section>
+				<section data-markdown>
+					### アトミックグループの例
+					* echo aaaaaaaaaaaaaaaaaaaa | perl -lne 'print if /(?>a\*a\*a\*a\*a\*a\*a\*a\*)[bc]/' 
+				</section>
+				<section data-markdown>
+					### マッチ時パターン展開
+					* (??{CODE})という形をした正規表現
+					* CODEの評価結果をパターンとして採用する
+				</section>
+				<section data-markdown>
+					### 回文にマッチするパターン
+					* /^(.+).?(??{reverse $1})$/
+				</section>
+				<section data-markdown>
+					### 解説しきれなかった機能
+					* split関数
+					* その他いろいろ
+				</section>
+				<section data-markdown>
+					### 集大成
+				</section>
+				<section data-markdown>
+					### Perlの正規表現の特徴
+					* 拡張正規表現を上回る豊富な表現力をもつ
+					* もともと正規表現は正規文法というクラスに属する文法を記述する手段
+					* Perlの正規表現は正規文法のクラスに収まらない文法も記述可能
+				</section>
+				<section data-markdown>
+					### これまでの知識を使えば正規文法クラスを超えられます
+				</section>
+				<section data-markdown>
+					### 課題
+					* 入れ子のブレスで囲まれた文字列にマッチする正規表現を書きなさい
+				</section>
+				<section data-markdown>
+					### 課題で使う主な機能
+					* qr演算子
+					* マッチ時パターン展開
+					* アトミックグループ
+				</section>
+				<section data-markdown>
+					### 解答例
+					* $b=qr/{(?:(?>[^{}]+)|(??{$b}))*}/
+				</section>
+				<section data-markdown>
+					### 皆さんへの指令
+					* 先ほどの解答例を使って、第28回シェル芸勉強会のQ3を攻略してください
+				</section>
+				<section data-markdown>
+					### 最後に
+				</section>
+				<section data-markdown>
+					#### この午前の部の勉強会でやりたかったこと
+					* Perlはシェル芸の仲間であることを宣言したかった
+					* 第28回シェル芸勉強会のQ3を攻略したかった
+				</section>
+				<section data-markdown>
+					### ご静聴ありがとうございました
 				</section>
 			</div>
 		</div>
